@@ -1,6 +1,10 @@
 from tkinter import *
 from SystemClasses import invoice, purchaseOrder,customer
+import sqlite3
 
+def db_connect(file):
+    conn=sqlite3.connect(file)
+    return(conn)
 
 class apScreen():
     def __init__(self,master):
@@ -74,7 +78,7 @@ class arScreen():
         self.custname=Entry(self.master,textvariable=self.custnamevar).grid(row=6,column=2)
         self.custnum=Entry(self.master,textvariable=self.custnumbervar).grid(row=7,column=2)
 
-        self.button1=Button(self.master,text="Create PO",command=self.createPO).grid(row=8,columnspan=3)
+        self.button1=Button(self.master,text="Create PO",command=self.insert_row).grid(row=8,columnspan=3)
     
         
     def createPO(self):
@@ -82,6 +86,16 @@ class arScreen():
         #current=customer(self.custnamevar.get(),self.custnumbervar.get(),0,0)
 
         print(current.item)
+    def insert_row(self):
+        conn=db_connect("AISyDB.db")
+        c=conn.cursor()
+        po=[self.povar.get(),self.itemvar.get(),self.itemnumvar.get(),self.quantityvar.get(),self.unitvar.get(),self.unitcostvar.get()]
+        
+        c.execute("INSERT INTO PurchaseOrders VALUES (?,?,?,?,?,?)",po)
+
+        conn.commit()
+
+        conn.close()
 
 class glScreen():
     def __init__(self,master):
@@ -121,7 +135,7 @@ class inqScreen():
         self.duedatevar=StringVar()
         self.custnamevar=StringVar()
         self.custnumvar=StringVar()
-        self.currencyvar=StringVar()n
+        self.currencyvar=StringVar()
         
         
         self.master=master
