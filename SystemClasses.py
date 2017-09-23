@@ -1,6 +1,6 @@
 class purchaseOrder(object):
 	#Class to store Purchase Orders for sales process
-	def __init__(self,item,itemnum,quantity,unit,unitcos,number):
+	def __init__(self,item,itemnum,quantity,unit,unitcost,number):
 		self.item=item
 		self.itemnum=itemnum
 		self.quantity=quantity

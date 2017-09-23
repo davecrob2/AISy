@@ -78,10 +78,10 @@ class arScreen():
     
         
     def createPO(self):
-        #current=purchaseOrder(self.item.get(),self.itemnum.get(),self.quantity.get(),self.unit.get(),self.unitcost.get(),self.po.get())
-        current=customer(self.custnamevar.get(),self.custnumbervar.get(),0,0)
+        current=purchaseOrder(self.itemvar.get(),self.itemnumvar.get(),self.quantityvar.get(),self.unitvar.get(),self.unitcostvar.get(),self.povar.get())
+        #current=customer(self.custnamevar.get(),self.custnumbervar.get(),0,0)
 
-        print(current.custname)
+        print(current.item)
 
 class glScreen():
     def __init__(self,master):
@@ -121,7 +121,7 @@ class inqScreen():
         self.duedatevar=StringVar()
         self.custnamevar=StringVar()
         self.custnumvar=StringVar()
-        self.currencyvar=StringVar()
+        self.currencyvar=StringVar()n
         
         
         self.master=master
