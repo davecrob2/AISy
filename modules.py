@@ -45,10 +45,23 @@ class apScreen():
     
         
     def saveInvoice(self):
-        #catch=messagebox.askyesno(self.master,'Are all invoice details correct?')
-        invoicedetails=invoice(self.numbervar.get(),self.amtvar.get(),self.datevar.get(),self.custnamevar.get(),self.custnumvar.get(),self.duedatevar.get())
-        print(invoicedetails.custname)
+        #Connecting to AISyDB..
+        conn=db_connect("C:\\Users\davecrob2\Documents\GitHub\AISy\AISy\AISyDB.db")
+        
+        #Cursor creation
+        c=conn.cursor()
+        
+        #Capturing entries from window into a list to post to db
+        invoice=[self.numbervar.get(),self.amtvar.get(),self.datevar.get(),self.custnamevar.get(),self.custnumvar.get(),self.duedatevar.get()]
+        
+        #SQL commands
+        c.execute("INSERT INTO invoices VALUES (?,?,?,?,?,?)",invoice)
 
+        #Commit changes to db
+        conn.commit()
+
+        #Close db
+        conn.close()
 #Window to enter Purchase Order details
 class arScreen():
     def __init__(self,master):
@@ -143,15 +156,68 @@ class invScreen():
 
 class inqScreen():
     def __init__(self,master):
-        self.amtvar=DoubleVar()
-        self.numbervar=StringVar()
-        self.datevar=StringVar()
-        self.duedatevar=StringVar()
-        self.custnamevar=StringVar()
-        self.custnumvar=StringVar()
-        self.currencyvar=StringVar()
+        self.documentnumbervar=IntVar()
+        self.documentsvar=StringVar()
         
-        
+
         self.master=master
         self.master.geometry('500x300')
-        self.master.title('Enter Invoice Details')
+        self.master.title('Enter Document Number')
+
+        self.documents=["Purchase Order Number","Invoice Number","Journal Entry Number"]
+
+        self.documentsvar.set(self.documents[0])
+
+        self.option_menu=OptionMenu(self.master,self.documentsvar,*self.documents).grid(row=0,column=0)
+        self.documentnumber=Entry(self.master,textvariable=self.documentnumbervar).grid(row=0,column=1)
+
+        #Button to create PO
+        self.button1=Button(self.master,text="Get Document",command=self.getDoc).grid(row=1,columnspan=2)
+
+    def getDoc(self):
+        #Connecting to AISyDB..
+        conn=db_connect("AISyDB.db")
+        
+        #Cursor creation
+        c=conn.cursor()
+        
+        doctype=self.documentsvar.get()
+        docnumber=(self.documentnumbervar.get(),)
+
+        print(doctype)
+        print(docnumber)
+
+        if doctype=="Purchase Order Number":  
+            #SQL commands
+            c.execute("SELECT * FROM PurchaseOrders WHERE id=?",docnumber)
+            result=c.fetchone()
+            if result == None:
+                print("Document not found")
+            else:
+                print(result)
+    
+            #Close db
+            conn.close()
+
+        elif doctype=="Invoice Number":
+            c.execute("SELECT * FROM invoices WHERE id=?",docnumber)
+            result=c.fetchone()
+            if result == None:
+                print("Document not found")
+            else:
+                print(result)
+            conn.close()
+
+        elif doctype=="Journal Entry Number":
+            c.execute("SELECT * FROM Journal Entries WHERE id=?",docnumber)
+            result=c.fetchone()
+            if result == None:
+                print("Document not found")
+            else:
+                print(result)
+            conn.close()
+
+
+        
+
+       
