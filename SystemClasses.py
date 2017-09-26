@@ -1,3 +1,7 @@
+from datetime import datetime
+import sqlite3
+
+
 class purchaseOrder(object):
 	#Class to store Purchase Orders for sales process
 	def __init__(self,item,itemnum,quantity,unit,unitcost,number):
@@ -38,11 +42,65 @@ class invoice(object):
         self.custnum=custnum
         self.duedate=duedate
 
+# class JournalEntry(object):
+# 	#Class for JournalEntries
+#     def __init__(self,code,entries):
+#         self.code=code
+#         self.entries=entries
+#     #Add function JE_Write
+#     #Add function if balanced
+# 	def code():
 
-class JournalEntry(object):
-	#Class for JournalEntries
-    def __init__(self,code,entries):
-        self.code=code
-        self.entries=entries
-    #Add function JE_Write
-    #Add function if balanced
+# 		today = str(datetime.now())
+# 		today_format = today[:4]+today[5:7]+today[8:10]
+# 		counter=1000
+# 		str_counter = str(counter)
+# 		je_num = today_format+str_counter
+# 		conn=db_connect("AISyDB.db")
+# 		c=conn.cursor()
+# 		c.execute(SELECT * FROM 'Journal Entries' ORDER BY ID DESC LIMIT 1)
+# 		last=str(c.fetchone())
+# 		if last[:8]==je_num[:8]:
+# 			counter=last+1
+# 			code=(today_format+str(counter))
+
+# 		else:
+# 			code=je_num
+# 	return(code)
+
+#class fuck(object):
+def code_gen():
+
+	today = str(datetime.now())
+	today_format = today[:4]+today[5:7]+today[8:10]
+	counter=1000
+	str_counter = str(counter)
+	je_num = today_format+str_counter
+	conn=sqlite3.connect("AISyDB.db")
+	c=conn.cursor()
+	c.execute("SELECT ID FROM JournalEntries ORDER BY ID DESC LIMIT 1")
+	last=str(c.fetchone())
+	if last[1:9]==je_num[:8]:
+		counter=int(last[9:13])+1
+		code=(today_format+str(counter))
+	else:
+		code=je_num
+	return(int(code))
+
+##today = str(datetime.now())
+##today_format = today[:4]+today[5:7]+today[8:10]
+##counter=1000
+##str_counter = str(counter)
+##je_num = today_format+str_counter
+##conn=sqlite3.connect("AISyDB.db")
+##c=conn.cursor()
+##c.execute("SELECT ID FROM JournalEntries ORDER BY ID DESC LIMIT 1")
+##last=str(c.fetchone())
+##if last[1:9]==je_num[:8]:
+##        counter=int(last[9:13])+1
+##        code=(today_format+str(counter))
+##        print(code)
+##else:
+##        code=je_num
+##        print(code)
+

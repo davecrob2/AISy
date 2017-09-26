@@ -1,5 +1,6 @@
 from tkinter import *
-from SystemClasses import invoice, purchaseOrder,customer
+from SystemClasses import invoice, purchaseOrder,customer, code_gen
+
 import sqlite3
 
 #Function to connect to a specified database
@@ -46,7 +47,7 @@ class apScreen():
         
     def saveInvoice(self):
         #Connecting to AISyDB..
-        conn=db_connect("C:\\Users\davecrob2\Documents\GitHub\AISy\AISy\AISyDB.db")
+        conn=db_connect("AISyDB.db")
         
         #Cursor creation
         c=conn.cursor()
@@ -126,18 +127,102 @@ class arScreen():
 
 class glScreen():
     def __init__(self,master):
-        self.amtvar=DoubleVar()
-        self.numbervar=StringVar()
-        self.datevar=StringVar()
-        self.duedatevar=StringVar()
-        self.custnamevar=StringVar()
-        self.custnumvar=StringVar()
-        self.currencyvar=StringVar()
-        
-        
+        #Variables for option menus
+        self.accountsvar1=StringVar()
+        self.accountsvar2=StringVar()
+        self.accountsvar3=StringVar()
+        self.accountsvar4=StringVar()
+
+        #Display text for option menus
+        self.accountsvar1.set("Select an Account")
+        self.accountsvar2.set("Select an Account")
+        self.accountsvar3.set("Select an Account")
+        self.accountsvar4.set("Select an Account")
+
+        #Window Geometry and title
         self.master=master
         self.master.geometry('500x300')
-        self.master.title('Enter Invoice Details')
+        self.master.title('Enter Manual Journal Entry')
+
+        #List of general ledger accounts
+        self.accounts={'Cash':100,'Accounts Receivable':101,'Inventory':102,'Property, Plant, and Equipment':103,'Prepaid Assets':104,'Intangible Assets':105,
+                      'Accounts Payable':200,'Accrued Expenses':201,'Debt':202,
+                       'Retained Earnings':300,
+                       'Sales':400,
+                       'Cost of Sales':500,'Depreciation and Amortization':501,'Selling and General Administrative':502}
+
+        #Option drop down menus to select accounts
+        self.option_menu1=OptionMenu(self.master,self.accountsvar1,*self.accounts.keys()).grid(row=1,column=0)
+        self.option_menu2=OptionMenu(self.master,self.accountsvar2,*self.accounts.keys()).grid(row=2,column=0)
+        self.option_menu3=OptionMenu(self.master,self.accountsvar3,*self.accounts.keys()).grid(row=3,column=0)
+        self.option_menu4=OptionMenu(self.master,self.accountsvar4,*self.accounts.keys()).grid(row=4,column=0)
+
+        #Labels for accounts, debits, credits columns
+        self.accountheader=Label(self.master,text="Account").grid(row=0,column=0)
+        self.debitsheader=Label(self.master,text="Debits (Enter as Positive Value)").grid(row=0,column=1)
+        self.creditsheader=Label(self.master,text="Credits (Enter as Negative Value)").grid(row=0,column=2)
+
+        #Variables for entry fields
+        self.debit1var=DoubleVar()
+        self.debit2var=DoubleVar()
+        self.debit3var=DoubleVar()
+        self.debit4var=DoubleVar()
+
+        self.credit1var=DoubleVar()
+        self.credit2var=DoubleVar()
+        self.credit3var=DoubleVar()
+        self.credit4var=DoubleVar()
+
+
+        #Entry fields for debits and credits
+        self.debit1=Entry(self.master,textvariable=self.debit1var).grid(row=1,column=1)
+        self.debit2=Entry(self.master,textvariable=self.debit2var).grid(row=2,column=1)
+        self.debit3=Entry(self.master,textvariable=self.debit3var).grid(row=3,column=1)
+        self.debit4=Entry(self.master,textvariable=self.debit4var).grid(row=4,column=1)
+
+        self.credit1=Entry(self.master,textvariable=self.credit1var).grid(row=1,column=2)
+        self.credit2=Entry(self.master,textvariable=self.credit2var).grid(row=2,column=2)
+        self.credit3=Entry(self.master,textvariable=self.credit3var).grid(row=3,column=2)
+        self.credit4=Entry(self.master,textvariable=self.credit4var).grid(row=4,column=2)
+
+        
+        #Button to create JE
+        self.button1=Button(self.master,text="Post Journal Entry",command=self.postJE).grid(row=5,columnspan=3)
+
+    def postJE(self):
+        self.code=code_gen()
+        
+        #Netting together credits and debits
+        self.net1=self.debit1var.get()+self.credit1var.get()
+        self.net2=self.debit2var.get()+self.credit2var.get()
+        self.net3=self.debit3var.get()+self.credit3var.get()
+        self.net4=self.debit4var.get()+self.credit4var.get()
+
+        self.a1=self.accounts[self.accountsvar1.get()]
+        self.a2=self.accounts[self.accountsvar2.get()]
+        self.a3=self.accounts[self.accountsvar3.get()]
+        self.a4=self.accounts[self.accountsvar4.get()]
+
+        self.values=[self.net1,self.net2,self.net3,self.net4]
+        self.accounts_selected=[self.a1,self.a2,self.a3,self.a4]
+   
+        conn=db_connect("AISyDB.db")
+        
+        #Cursor creation
+        c=conn.cursor()
+        #SQL commands
+        for x,y in zip(self.values,self.accounts_selected):
+            c.execute("INSERT INTO JournalEntries VALUES (?,?,?)",(self.code,y,x))
+        
+
+        #Commit changes to db
+        conn.commit()
+
+        #Close db
+        conn.close()
+
+
+
 
 class invScreen():
     def __init__(self,master):

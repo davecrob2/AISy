@@ -1,6 +1,8 @@
 from tkinter import *
 from modules import *
 import tkinter.messagebox
+root=Tk()
+
 
 class Dashboard():
     def __init__(self,master):
@@ -39,8 +41,9 @@ class Dashboard():
 
     def finish(self):
         self.master.destroy()
-
-def main():
-    root=Tk()
-    initDashboard=Dashboard(root)
-    root.mainloop()
+initDashboard=Dashboard(root)
+# def main():
+#     root=Tk()
+#     initDashboard=Dashboard(root)
+#     root.mainloop()
+root.mainloop()
