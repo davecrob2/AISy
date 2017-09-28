@@ -16,7 +16,7 @@ class Dashboard():
         #Access AR Module
         self.buttonAR=Button(self.master,text="Create Purchase Order",command=self.enterPurchaseOrder).grid(row=0,column=3)
         #Access GL Module
-        self.buttonGL=Button(self.master,text="Go to GL",command=self.gotoGL).grid(row=0,column=4)
+        self.buttonGL=Button(self.master,text="Manual Journal Entry",command=self.manje).grid(row=0,column=4)
         #Access Inventory Module
         self.buttonINV=Button(self.master,text="Inventory Manager",command=self.gotoInventory).grid(row=0,column=5)
         #Access Inquiries Module
@@ -29,9 +29,9 @@ class Dashboard():
     def enterPurchaseOrder(self):
         leveltwo=Toplevel(self.master)
         window=arScreen(leveltwo)
-    def gotoGL(self):
+    def manje(self):
         leveltwo=Toplevel(self.master)
-        window=glScreen(leveltwo)
+        window=manualJE(leveltwo)
     def gotoInventory(self):
         leveltwo=Toplevel(self.master)
         window=invScreen(leveltwo)

@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 from SystemClasses import invoice, purchaseOrder,customer, code_gen
 
 import sqlite3
@@ -63,6 +64,11 @@ class apScreen():
 
         #Close db
         conn.close()
+
+        self.quit()
+    #Function to kill child window
+    def quit(self):
+        self.master.destroy()
 #Window to enter Purchase Order details received from Customers
 class arScreen():
     def __init__(self,master):
@@ -125,8 +131,13 @@ class arScreen():
         #Close db
         conn.close()
 
+        self.quit()
+    #Function to kill child window
+    def quit(self):
+        self.master.destroy()
+
 #Window to enter manual journal entries 
-class glScreen():
+class manualJE():
     def __init__(self,master):
         #Variables for option menus
         self.accountsvar1=StringVar()
@@ -145,6 +156,9 @@ class glScreen():
         self.master.geometry('500x300')
         self.master.title('Enter Manual Journal Entry')
 
+        #Generates JE id
+        self.codetest=code_gen()
+        
         #List of general ledger accounts
         self.accounts={'Cash':100,'Accounts Receivable':101,'Inventory':102,'Property, Plant, and Equipment':103,'Prepaid Assets':104,'Intangible Assets':105,
                       'Accounts Payable':200,'Accrued Expenses':201,'Debt':202,
@@ -153,15 +167,16 @@ class glScreen():
                        'Cost of Sales':500,'Depreciation and Amortization':501,'Selling and General Administrative':502}
 
         #Option drop down menus to select accounts
-        self.option_menu1=OptionMenu(self.master,self.accountsvar1,*self.accounts.keys()).grid(row=1,column=0)
-        self.option_menu2=OptionMenu(self.master,self.accountsvar2,*self.accounts.keys()).grid(row=2,column=0)
-        self.option_menu3=OptionMenu(self.master,self.accountsvar3,*self.accounts.keys()).grid(row=3,column=0)
-        self.option_menu4=OptionMenu(self.master,self.accountsvar4,*self.accounts.keys()).grid(row=4,column=0)
+        self.option_menu1=OptionMenu(self.master,self.accountsvar1,*self.accounts.keys()).grid(row=2,column=0)
+        self.option_menu2=OptionMenu(self.master,self.accountsvar2,*self.accounts.keys()).grid(row=3,column=0)
+        self.option_menu3=OptionMenu(self.master,self.accountsvar3,*self.accounts.keys()).grid(row=4,column=0)
+        self.option_menu4=OptionMenu(self.master,self.accountsvar4,*self.accounts.keys()).grid(row=5,column=0)
 
         #Labels for accounts, debits, credits columns
-        self.accountheader=Label(self.master,text="Account").grid(row=0,column=0)
-        self.debitsheader=Label(self.master,text="Debits (Enter as Positive Value)").grid(row=0,column=1)
-        self.creditsheader=Label(self.master,text="Credits (Enter as Negative Value)").grid(row=0,column=2)
+        self.accountheader=Label(self.master,text="Account").grid(row=1,column=0)
+        self.debitsheader=Label(self.master,text="Debits (Enter as Positive Value)").grid(row=1,column=1)
+        self.creditsheader=Label(self.master,text="Credits (Enter as Negative Value)").grid(row=1,column=2)
+        self.codelabel=Label(self.master,text="Journal Entry Code: "+str(self.codetest)).grid(row=0,columnspan=3)
 
         #Variables for entry fields
         self.debit1var=DoubleVar()
@@ -176,23 +191,23 @@ class glScreen():
 
 
         #Entry fields for debits and credits
-        self.debit1=Entry(self.master,textvariable=self.debit1var).grid(row=1,column=1)
-        self.debit2=Entry(self.master,textvariable=self.debit2var).grid(row=2,column=1)
-        self.debit3=Entry(self.master,textvariable=self.debit3var).grid(row=3,column=1)
-        self.debit4=Entry(self.master,textvariable=self.debit4var).grid(row=4,column=1)
+        self.debit1=Entry(self.master,textvariable=self.debit1var).grid(row=2,column=1)
+        self.debit2=Entry(self.master,textvariable=self.debit2var).grid(row=3,column=1)
+        self.debit3=Entry(self.master,textvariable=self.debit3var).grid(row=4,column=1)
+        self.debit4=Entry(self.master,textvariable=self.debit4var).grid(row=5,column=1)
 
-        self.credit1=Entry(self.master,textvariable=self.credit1var).grid(row=1,column=2)
-        self.credit2=Entry(self.master,textvariable=self.credit2var).grid(row=2,column=2)
-        self.credit3=Entry(self.master,textvariable=self.credit3var).grid(row=3,column=2)
-        self.credit4=Entry(self.master,textvariable=self.credit4var).grid(row=4,column=2)
+        self.credit1=Entry(self.master,textvariable=self.credit1var).grid(row=2,column=2)
+        self.credit2=Entry(self.master,textvariable=self.credit2var).grid(row=3,column=2)
+        self.credit3=Entry(self.master,textvariable=self.credit3var).grid(row=4,column=2)
+        self.credit4=Entry(self.master,textvariable=self.credit4var).grid(row=5,column=2)
 
 
         #Button to create JE
-        self.button1=Button(self.master,text="Post Journal Entry",command=self.postJE).grid(row=5,columnspan=3)
+        self.button1=Button(self.master,text="Post Journal Entry",command=self.postJE).grid(row=6,columnspan=3)
 
     #Function to post JEs
     def postJE(self):
-        self.code=code_gen()
+        
         
         #Netting together credits and debits
         self.net1=self.debit1var.get()+self.credit1var.get()
@@ -210,34 +225,46 @@ class glScreen():
         self.values=[self.net1,self.net2,self.net3,self.net4]
         self.accounts_selected=[self.a1,self.a2,self.a3,self.a4]
         
+        
+            
+
         #Connecting to the database
         conn=db_connect("AISyDB.db")
         
         #Cursor creation
         c=conn.cursor()
         #SQL commands
-        for x,y in zip(self.values,self.accounts_selected):
-            c.execute("INSERT INTO JournalEntries VALUES (?,?,?)",(self.code,y,x))
-        
+        if self.net1+self.net2+self.net3+self.net4 ==0:
+            for x,y in zip(self.values,self.accounts_selected):
+                c.execute("INSERT INTO JournalEntries VALUES (?,?,?)",(self.codetest,y,x))
+            
 
-        #Commit changes to db
-        conn.commit()
+            #Commit changes to db
+            conn.commit()
 
-        #Close db
-        conn.close()
+            #Close db
+            conn.close()
+            self.quit()
+        else:
+            notbalanced=messagebox.showerror(title="Journal Entry Not Balanced",message="The Journal Entry is not balanced. Please modify the Journal Entry before resubmission.")
 
+
+    #Function to kill child window
+    def quit(self):
+        self.master.destroy()
 #Window to inquire of invoices, purchase orders, and journal entries
 class inqScreen():
     def __init__(self,master):
         self.documentnumbervar=IntVar()
         self.documentsvar=StringVar()
         
+        
 
         self.master=master
         self.master.geometry('500x300')
         self.master.title('Enter Document Number')
 
-        self.documents=["Purchase Order Number","Invoice Number","Journal Entry Number"]
+        self.documents=["Purchase Order Number","Invoice Number","Journal Entry Number","Account Balance"]
 
         self.documentsvar.set(self.documents[0])
 
@@ -258,6 +285,7 @@ class inqScreen():
         #Getting the document type and document number
         doctype=self.documentsvar.get()
         docnumber=(self.documentnumbervar.get(),)
+                
 
         #Checks the document type and once it matches it displays the related data based on the document number
         if doctype=="Purchase Order Number":  
@@ -265,9 +293,10 @@ class inqScreen():
             c.execute("SELECT * FROM PurchaseOrders WHERE id=?",docnumber)
             result=c.fetchone()
             if result == None:
-                print("Document not found")
+                nodoc=messagebox.showerror(title="No document found.",message="Your inquiry returned no results.")
             else:
                 print(result)
+                self.quit()
     
             #Close db
             conn.close()
@@ -276,19 +305,33 @@ class inqScreen():
             c.execute("SELECT * FROM invoices WHERE id=?",docnumber)
             result=c.fetchone()
             if result == None:
-                print("Document not found")
+                nodoc=messagebox.showerror(title="No document found.",message="Your inquiry returned no results.")
             else:
                 print(result)
+                self.quit()
             conn.close()
 
         elif doctype=="Journal Entry Number":
             c.execute("SELECT * FROM JournalEntries WHERE id=?",docnumber)
             result=c.fetchone()
             if result == None:
-                print("Document not found")
+                nodoc=messagebox.showerror(title="No document found.",message="Your inquiry returned no results.")
             else:
                 print(result)
+                self.quit()
             conn.close()
+        elif doctype=="Account Balance":
+            c.execute("SELECT account, SUM(value) FROM JournalEntries WHERE account=? GROUP BY account",docnumber)
+            result=c.fetchone()
+            if result == None:
+                nodoc=messagebox.showerror(title="Zero Dollar Balance",message="No balance exists.")
+            else:
+                print(result)
+                self.quit()
+    #Function to kill child window
+    def quit(self):
+        self.master.destroy()
+    
 
 
         
