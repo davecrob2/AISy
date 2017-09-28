@@ -8,7 +8,7 @@ def db_connect(file):
     conn=sqlite3.connect(file)
     return(conn)
 
-#Window to enter Invoice details
+#Window to enter Invoice details received from Customers
 class apScreen():
     def __init__(self,master):
         #Variable classes for entries
@@ -63,7 +63,7 @@ class apScreen():
 
         #Close db
         conn.close()
-#Window to enter Purchase Order details
+#Window to enter Purchase Order details received from Customers
 class arScreen():
     def __init__(self,master):
         #Variable classes for entries
@@ -114,10 +114,10 @@ class arScreen():
         c=conn.cursor()
         
         #Capturing entries from window into a list to post to db
-        po=[self.povar.get(),self.itemvar.get(),self.itemnumvar.get(),self.quantityvar.get(),self.unitvar.get(),self.unitcostvar.get()]
+        po=[self.povar.get(),self.itemvar.get(),self.itemnumvar.get(),self.quantityvar.get(),self.unitvar.get(),self.unitcostvar.get(),self.custnamevar.get(),self.custnumbervar.get()]
         
         #SQL commands
-        c.execute("INSERT INTO PurchaseOrders VALUES (?,?,?,?,?,?)",po)
+        c.execute("INSERT INTO PurchaseOrders VALUES (?,?,?,?,?,?,?,?)",po)
 
         #Commit changes to db
         conn.commit()
@@ -125,6 +125,7 @@ class arScreen():
         #Close db
         conn.close()
 
+#Window to enter manual journal entries 
 class glScreen():
     def __init__(self,master):
         #Variables for option menus
@@ -185,10 +186,11 @@ class glScreen():
         self.credit3=Entry(self.master,textvariable=self.credit3var).grid(row=3,column=2)
         self.credit4=Entry(self.master,textvariable=self.credit4var).grid(row=4,column=2)
 
-        
+
         #Button to create JE
         self.button1=Button(self.master,text="Post Journal Entry",command=self.postJE).grid(row=5,columnspan=3)
 
+    #Function to post JEs
     def postJE(self):
         self.code=code_gen()
         
@@ -198,14 +200,17 @@ class glScreen():
         self.net3=self.debit3var.get()+self.credit3var.get()
         self.net4=self.debit4var.get()+self.credit4var.get()
 
+        #Getting Account code from accounts dictionary
         self.a1=self.accounts[self.accountsvar1.get()]
         self.a2=self.accounts[self.accountsvar2.get()]
         self.a3=self.accounts[self.accountsvar3.get()]
         self.a4=self.accounts[self.accountsvar4.get()]
 
+        #List of balances and accounts selected
         self.values=[self.net1,self.net2,self.net3,self.net4]
         self.accounts_selected=[self.a1,self.a2,self.a3,self.a4]
-   
+        
+        #Connecting to the database
         conn=db_connect("AISyDB.db")
         
         #Cursor creation
@@ -221,24 +226,7 @@ class glScreen():
         #Close db
         conn.close()
 
-
-
-
-class invScreen():
-    def __init__(self,master):
-        self.amtvar=DoubleVar()
-        self.numbervar=StringVar()
-        self.datevar=StringVar()
-        self.duedatevar=StringVar()
-        self.custnamevar=StringVar()
-        self.custnumvar=StringVar()
-        self.currencyvar=StringVar()
-        
-        
-        self.master=master
-        self.master.geometry('500x300')
-        self.master.title('Enter Invoice Details')
-
+#Window to inquire of invoices, purchase orders, and journal entries
 class inqScreen():
     def __init__(self,master):
         self.documentnumbervar=IntVar()
@@ -259,6 +247,7 @@ class inqScreen():
         #Button to create PO
         self.button1=Button(self.master,text="Get Document",command=self.getDoc).grid(row=1,columnspan=2)
 
+    #Function to get document details from inquiries
     def getDoc(self):
         #Connecting to AISyDB..
         conn=db_connect("AISyDB.db")
@@ -266,12 +255,11 @@ class inqScreen():
         #Cursor creation
         c=conn.cursor()
         
+        #Getting the document type and document number
         doctype=self.documentsvar.get()
         docnumber=(self.documentnumbervar.get(),)
 
-        print(doctype)
-        print(docnumber)
-
+        #Checks the document type and once it matches it displays the related data based on the document number
         if doctype=="Purchase Order Number":  
             #SQL commands
             c.execute("SELECT * FROM PurchaseOrders WHERE id=?",docnumber)
@@ -294,7 +282,7 @@ class inqScreen():
             conn.close()
 
         elif doctype=="Journal Entry Number":
-            c.execute("SELECT * FROM Journal Entries WHERE id=?",docnumber)
+            c.execute("SELECT * FROM JournalEntries WHERE id=?",docnumber)
             result=c.fetchone()
             if result == None:
                 print("Document not found")
